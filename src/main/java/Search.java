@@ -31,7 +31,10 @@ public class Search {
         }
         //Start brute force
         //bruteForce(field);
-        iWantBcDegreeForFreePlz(field, input);
+        if (!iWantBcDegreeForFreePlz(field, 1)) {
+            System.out.println("Solution not found and it will not be found");
+        }
+        //bruteForce(field);
     }
 
     private static int characterToID(char character) {
@@ -65,72 +68,65 @@ public class Search {
         return pentID;
     }
 
-    private static boolean iWantBcDegreeForFreePlz(int[][] field, char[] restOfInput) {
-        if (restOfInput.length > 0) {
-            int localInput = restOfInput.length;
-            restOfInput = Arrays.copyOf(restOfInput, restOfInput.length - 1);
+    private static boolean iWantBcDegreeForFreePlz(int[][] field, int cycle) {
 
-            //System.out.println(localInput);
-            int pentID = characterToID(input[localInput - 1]);
-            for (int i = 0; i < PentominoDatabase.data[pentID].length; i++) {
+        //System.out.println(localInput);
+        int pentID = characterToID(input[cycle - 1]);
+        for (int i = 0; i < PentominoDatabase.data[pentID].length; i++) {
 
-                //***********
-                int[][] pieceToPlace = PentominoDatabase.data[pentID][i];
+            //***********
+            int[][] pieceToPlace = PentominoDatabase.data[pentID][i];
 
-                //Randomly generate a position to put the pentomino on the board
-                int x = -1;
-                int y = -1;
-                if (horizontalGridSize < pieceToPlace.length) {
-                    //this particular rotation of the piece is too long for the field
-                    x = -1;
-                } else {
-                    //there are multiple possibilities where to place the piece without leaving the field
-
-                    for (int j = 0; j < horizontalGridSize - pieceToPlace.length + 1; j++) {
-                        x = j;
-                        //there are multiple possibilities where to place the piece without leaving the field
-                        if (verticalGridSize < pieceToPlace[0].length) {
-                            y = -1;
-                        } else {
-                            for (int k = 0; k < verticalGridSize - pieceToPlace[0].length + 1; k++) {
-                                y = k;
-                                //If there is a possibility to place the piece on the field, do it
-                                if (x >= 0 && y >= 0) {
-                                    addPiece(field, pieceToPlace, pentID, x, y);
-                                    if (iWantBcDegreeForFreePlz(field, restOfInput)) {
-                                        ui.setState(field);
-                                        System.out.println("Solution found");
-                                    } else {
-                                        for (int l = 0; l < field.length; l++) {
-                                            for (int m = 0; m < field[l].length; m++) {
-                                                field[l][m] = -1;
+            //Randomly generate a position to put the pentomino on the board
+            int x = -1;
+            int y = -1;
+            if (horizontalGridSize >= pieceToPlace.length) {
+                for (int j = 0; j < horizontalGridSize - pieceToPlace.length + 1; j++) {
+                    x = j;
+                    if (verticalGridSize >= pieceToPlace[0].length) {
+                        for (int k = 0; k < verticalGridSize - pieceToPlace[0].length + 1; k++) {
+                            y = k;
+                            //If there is a possibility to place the piece on the field, do it
+                            if (x >= 0 && y >= 0) {
+                                addPiece(field, pieceToPlace, pentID, x, y);
+                                if (cycle == input.length) {
+                                    //test for solution
+                                    Boolean solutionFound = true;
+                                    for (int l = 0; l < field.length; l++) {
+                                        for (int m = 0; m < field[l].length; m++) {
+                                            if (field[l][m] == -1) {
+                                                solutionFound = false;
                                             }
                                         }
                                     }
+
+                                    if (solutionFound) {
+                                        ui.setState(field);
+                                        System.out.println("Solution found");
+                                        return true;
+                                    } else {
+                                        removePiece(field, pieceToPlace, pentID, x, y);
+                                    }
+                                } else if (cycle < input.length) {
+                                    if (iWantBcDegreeForFreePlz(field, cycle + 1)) {
+                                        return true;
+                                    } else {
+                                        removePiece(field, pieceToPlace, pentID, x, y);
+                                    }
+                                    //all pieces are ont set yet
+                                } else {
+                                    System.out.println("Something really wrong is going on. This message apears because 1+1 = 1");
+                                    //it should never go this line
+                                    //throw new Exception("Something really wrong is going on");
                                 }
+                            } else {
+                                System.out.println("blby to je");
                             }
                         }
                     }
                 }
             }
-        } else {
-            Boolean solutionFound = true;
-            for (int i = 0; i < field.length; i++) {
-                for (int j = 0; j < field[i].length; j++) {
-                    if (field[i][j] == -1) {
-                        solutionFound = false;
-                    }
-                }
-            }
-
-            if (solutionFound) {
-                //display the field
-                return true;
-            } else {
-                return false;
-            }
         }
-        System.err.println("No solution found and will not be found!");
         return false;
     }
 
@@ -213,6 +209,19 @@ public class Search {
                 if (piece[i][j] == 1) {
                     // Add the ID of the pentomino to the board if the pentomino occupies this square
                     field[x + i][y + j] = pieceID;
+                }
+            }
+        }
+    }
+    // Adds a pentomino to the position on the field (overriding current board at that position)
+    public static void removePiece(int[][] field, int[][] piece, int pieceID, int x, int y) {
+        for (int i = 0; i < piece.length; i++) // loop over x position of pentomino
+        {
+            for (int j = 0; j < piece[i].length; j++) // loop over y position of pentomino
+            {
+                if (piece[i][j] == 1) {
+                    // Add the ID of the pentomino to the board if the pentomino occupies this square
+                    field[x + i][y + j] = -1;
                 }
             }
         }

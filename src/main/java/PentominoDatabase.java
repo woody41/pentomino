@@ -12,7 +12,7 @@ public class PentominoDatabase
     /**
      *
      */
-    public static int[][][][] data = loadData("C:\\Users\\Matěj Seifert\\Desktop\\PentominoDone\\pentominos.csv");
+    public static int[][][][] data = loadData("/Users/nexisi/Documents/Projects/pentomino/pentomino/src/main/java/pentominos.csv");
 
     // Loads and decodes the CSV file
     private static int[][][][] loadData(String fileName)
