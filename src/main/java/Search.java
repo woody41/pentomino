@@ -30,7 +30,8 @@ public class Search {
             }
         }
         //Start brute force
-        bruteForce(field);
+        //bruteForce(field);
+        iWantBcDegreeForFreePlz(field, input);
     }
 
     private static int characterToID(char character) {
@@ -62,6 +63,75 @@ public class Search {
         }
         count++;
         return pentID;
+    }
+
+    private static boolean iWantBcDegreeForFreePlz(int[][] field, char[] restOfInput) {
+        if (restOfInput.length > 0) {
+            int localInput = restOfInput.length;
+            restOfInput = Arrays.copyOf(restOfInput, restOfInput.length - 1);
+
+            //System.out.println(localInput);
+            int pentID = characterToID(input[localInput - 1]);
+            for (int i = 0; i < PentominoDatabase.data[pentID].length; i++) {
+
+                //***********
+                int[][] pieceToPlace = PentominoDatabase.data[pentID][i];
+
+                //Randomly generate a position to put the pentomino on the board
+                int x = -1;
+                int y = -1;
+                if (horizontalGridSize < pieceToPlace.length) {
+                    //this particular rotation of the piece is too long for the field
+                    x = -1;
+                } else {
+                    //there are multiple possibilities where to place the piece without leaving the field
+
+                    for (int j = 0; j < horizontalGridSize - pieceToPlace.length + 1; j++) {
+                        x = j;
+                        //there are multiple possibilities where to place the piece without leaving the field
+                        if (verticalGridSize < pieceToPlace[0].length) {
+                            y = -1;
+                        } else {
+                            for (int k = 0; k < verticalGridSize - pieceToPlace[0].length + 1; k++) {
+                                y = k;
+                                //If there is a possibility to place the piece on the field, do it
+                                if (x >= 0 && y >= 0) {
+                                    addPiece(field, pieceToPlace, pentID, x, y);
+                                    if (iWantBcDegreeForFreePlz(field, restOfInput)) {
+                                        ui.setState(field);
+                                        System.out.println("Solution found");
+                                    } else {
+                                        for (int l = 0; l < field.length; l++) {
+                                            for (int m = 0; m < field[l].length; m++) {
+                                                field[l][m] = -1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            Boolean solutionFound = true;
+            for (int i = 0; i < field.length; i++) {
+                for (int j = 0; j < field[i].length; j++) {
+                    if (field[i][j] == -1) {
+                        solutionFound = false;
+                    }
+                }
+            }
+
+            if (solutionFound) {
+                //display the field
+                return true;
+            } else {
+                return false;
+            }
+        }
+        System.err.println("No solution found and will not be found!");
+        return false;
     }
 
     private static void bruteForce(int[][] field) {
